@@ -43,3 +43,6 @@ Overall, we are able to achieve accuracies in the mid-90s for Top-K 40 generatio
 ### Data removal requests
 
 If you believe your work is included in WebText and would like us to remove it, please let us know at webtextdata@openai.com.
+
+### Docker build
+docker build D:\Github\gpt-2-output-dataset -t gpt2-detector 
