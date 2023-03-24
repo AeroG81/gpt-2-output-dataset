@@ -8,10 +8,10 @@ RUN apt-get install -y python3-pip
 RUN pip3 install --upgrade pip
 RUN pip3 install --upgrade setuptools
 
-COPY detector-base.pt /detector-base.pt
+COPY detector-large.pt /detector-large.pt
 # TODO: keep root/.cache/torch/transformers/ between runs
 COPY requirements.txt requirements.txt
 RUN pip3 --no-cache-dir install -r requirements.txt
 COPY detector/ /detector
 
-ENTRYPOINT ["python3", "-m", "detector.server", "detector-base.pt"]
+ENTRYPOINT ["python3", "-m", "detector.server", "detector-large.pt"]
