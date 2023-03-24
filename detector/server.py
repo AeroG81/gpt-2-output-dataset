@@ -52,6 +52,40 @@ class RequestHandler(SimpleHTTPRequestHandler):
             fake_probability=fake
         )).encode())
 
+    def do_POST(self):
+        content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
+        post_data = self.rfile.read(content_length) # <--- Gets the data itself
+        query = post_data.decode('utf-8')                   # Data in text?
+
+        if not query:
+            self.begin_content('text/html')
+
+            html = os.path.join(os.path.dirname(__file__), 'index.html')
+            self.wfile.write(open(html).read().encode())
+            return
+
+        self.begin_content('application/json;charset=UTF-8')
+        # print(query) # To be tested out
+        tokens = tokenizer.encode(query)
+        all_tokens = len(tokens)
+        tokens = tokens[:tokenizer.max_len - 2]
+        used_tokens = len(tokens)
+        tokens = torch.tensor([tokenizer.bos_token_id] + tokens + [tokenizer.eos_token_id]).unsqueeze(0)
+        mask = torch.ones_like(tokens)
+
+        with torch.no_grad():
+            logits = model(tokens.to(device), attention_mask=mask.to(device))[0]
+            probs = logits.softmax(dim=-1)
+
+        fake, real = probs.detach().cpu().flatten().numpy().tolist()
+
+        self.wfile.write(json.dumps(dict(
+            all_tokens=all_tokens,
+            used_tokens=used_tokens,
+            real_probability=real,
+            fake_probability=fake
+        )).encode())
+
     def begin_content(self, content_type):
         self.send_response(200)
         self.send_header('Content-Type', content_type)
